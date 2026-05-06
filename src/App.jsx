@@ -1,9 +1,5 @@
 import { useState, useEffect } from "react";
 import { auth, googleProvider, signInWithPopup, signOut, onAuthStateChanged, db, doc, getDoc, setDoc, serverTimestamp } from "./firebase.js";
-import {
-  auth, googleProvider, signInWithPopup, signOut, onAuthStateChanged,
-  db, doc, getDoc, setDoc, serverTimestamp
-} from "./firebase.js";
 
 /* ── FIREBASE CONFIG ── */
 // Firebase 설정은 src/firebase.js에서 관리됩니다.
@@ -681,11 +677,25 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [appReady, setAppReady] = useState(false);
 
-  // Firebase Auth 상태 감지
+// Firebase Auth 상태 감지
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) setCurrentUser({ displayName: user.displayName, email: user.email, photoURL: user.photoURL });
-      else setCurrentUser(null);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setCurrentUser({ displayName: user.displayName, email: user.email, photoURL: user.photoURL });
+        try {
+          const userDocRef = doc(db, "users", user.uid);
+          const snap = await getDoc(userDocRef);
+          if (snap.exists()) {
+            const d = snap.data();
+            if (d.tasks) setTasks(d.tasks);
+            if (d.doneTasks) setDoneTasks(d.doneTasks);
+            if (d.checkinHistory) setCheckinHistory(d.checkinHistory);
+            if (d.todayCheckin) setTodayCheckin(d.todayCheckin);
+          }
+        } catch(e) {}
+      } else {
+        setCurrentUser(null);
+      }
     });
     return () => unsubscribe();
   }, []);
