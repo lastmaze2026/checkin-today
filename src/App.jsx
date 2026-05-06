@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { auth, googleProvider, signInWithPopup, signOut, onAuthStateChanged, db, doc, getDoc, setDoc, serverTimestamp } from "./firebase.js";
 import {
   auth, googleProvider, signInWithPopup, signOut, onAuthStateChanged,
   db, doc, getDoc, setDoc, serverTimestamp
