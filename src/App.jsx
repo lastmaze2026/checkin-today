@@ -724,15 +724,22 @@ export default function App() {
   }, []);
 
   // 유저 데이터 저장 (변경 시 자동 저장)
-  const saveUserData = async (newTasks, newDone, newCheckins, newTodayCheckin) => {
+const saveUserData = async (newTasks, newDone, newCheckins, newTodayCheckin) => {
+    const data = {
+      tasks: newTasks || tasks,
+      doneTasks: newDone || doneTasks,
+      checkinHistory: newCheckins || checkinHistory,
+      todayCheckin: newTodayCheckin !== undefined ? newTodayCheckin : todayCheckin,
+    };
     try {
       if (window.storage && window.storage.set) {
-        await window.storage.set(STORAGE_KEY, JSON.stringify({
-          tasks: newTasks || tasks,
-          doneTasks: newDone || doneTasks,
-          checkinHistory: newCheckins || checkinHistory,
-          todayCheckin: newTodayCheckin !== undefined ? newTodayCheckin : todayCheckin,
-        }));
+        await window.storage.set(STORAGE_KEY, JSON.stringify(data));
+      }
+    } catch(e) {}
+    try {
+      if (auth.currentUser) {
+        const userDocRef = doc(db, "users", auth.currentUser.uid);
+        await setDoc(userDocRef, data, { merge: true });
       }
     } catch(e) {}
   };
